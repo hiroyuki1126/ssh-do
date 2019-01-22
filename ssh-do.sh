@@ -9,12 +9,11 @@ function abort() {
     exit 1
 }
 
-[ $# -eq 1 ] || abort "Usage: $(basename $0) <server_list.txt>"
-readonly input_file=$1
-[ -r ${input_file} ] || abort "${input_file}: cannot access."
-
-readonly script_url='https://raw.githubusercontent.com/hiroyuki1126/centos-setup/master/centos-setup.sh'
-readonly exec_command="curl -sL ${script_url} | bash -x"
+[ $# -eq 2 ] || abort "Usage: $(basename $0) <server_list> <script_file>"
+readonly server_list=$1
+readonly script_file=$2
+[ -r ${server_list} ] || abort "${server_list}: cannot access."
+[ -r ${script_file} ] || abort "${script_file}: cannot access."
 
 hostname=()
 username=()
@@ -25,7 +24,7 @@ while read line; do
     username=(${username[@]} ${data[1]})
     password=(${password[@]} ${data[2]})
 done << FILE_CONTENTS
-    $(grep -v -e '^\s*#' -e '^\s*$' ${input_file})
+    $(grep -v -e '^\s*#' -e '^\s*$' ${server_list})
 FILE_CONTENTS
 
 for i in $(seq 0 $(expr ${#hostname[@]} - 1)); do
@@ -40,24 +39,17 @@ for i in $(seq 0 $(expr ${#hostname[@]} - 1)); do
 
     expect -c "
     set timeout -1
-    spawn ssh ${username[${i}]}@${hostname[${i}]}
+    spawn bash -c \"cat ${script_file} | ssh ${username[${i}]}@${hostname[${i}]} bash\"
     expect \"Are you sure you want to continue connecting (yes/no)?\" {
         send \"yes\n\"
         expect \"${username[${i}]}@${hostname[${i}]}'s password:\" {
             send \"${password[${i}]}\n\"
-            expect \"\[#$%>\]\" {
-                send \"${exec_command}\n\"
-                send \"exit\n\"
-            }
         }
     } \"${username[${i}]}@${hostname[${i}]}'s password:\" {
         send \"${password[${i}]}\n\"
-        expect \"\[#$%>\]\" {
-            send \"${exec_command}\n\"
-            send \"exit\n\"
-        }
     }
-    interact
+    expect eof
+    exit
     "
     echo
 done
