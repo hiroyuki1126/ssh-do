@@ -15,20 +15,28 @@ readonly script_file=$2
 [ -r ${server_list} ] || abort "${server_list}: cannot access."
 [ -r ${script_file} ] || abort "${script_file}: cannot access."
 
-hostname=()
-username=()
-password=()
+data=()
 while read line; do
-    data=(${line[@]})
-    hostname=(${hostname[@]} ${data[0]})
-    username=(${username[@]} ${data[1]})
-    password=(${password[@]} ${data[2]})
+    data+=("${line}")
 done << FILE_CONTENTS
     $(grep -v -e '^\s*#' -e '^\s*$' ${server_list})
 FILE_CONTENTS
 
-for i in $(seq 0 $(expr ${#hostname[@]} - 1)); do
-    read -p "#################### ${hostname[${i}]} #################### ok? (y/N): " yn
+[ "${data}" = "" ] && abort "${server_list}: file is empty."
+
+cat ${script_file} || abort "cat ${script_file}: failed."
+
+for hostinfo in "${data[@]}"; do
+    host_array=(${hostinfo})
+    if [ ${#host_array[@]} -ne 3 ]; then
+        error "${server_list}: format is invalid. => ${hostinfo}"
+        continue
+    fi
+    hostname=${host_array[0]}
+    username=${host_array[1]}
+    password=${host_array[2]}
+
+    read -p "#################### ${hostname} #################### ok? (y/N): " yn
     case "${yn}" in
         [nN])
             continue
@@ -39,19 +47,26 @@ for i in $(seq 0 $(expr ${#hostname[@]} - 1)); do
 
     expect -c "
     set timeout -1
-    spawn bash -c \"cat ${script_file} | ssh ${username[${i}]}@${hostname[${i}]} bash\"
+    spawn bash -c \"cat ${script_file} | ssh ${username}@${hostname} bash\"
     expect \"Are you sure you want to continue connecting (yes/no)?\" {
         send \"yes\n\"
-        expect \"${username[${i}]}@${hostname[${i}]}'s password:\" {
-            send \"${password[${i}]}\n\"
+        expect \"${username}@${hostname}'s password:\" {
+            send \"${password}\n\"
         }
-    } \"${username[${i}]}@${hostname[${i}]}'s password:\" {
-        send \"${password[${i}]}\n\"
+    } \"${username}@${hostname}'s password:\" {
+        send \"${password}\n\"
     }
     expect eof
     exit
     "
-    echo
+
+    if [ $? -eq 0 ]; then
+        echo
+        echo '-------------------- successfully exit. --------------------'
+    else
+        echo
+        echo '!!!!!!!!!!!!!!!!!!!! abnormally exit. !!!!!!!!!!!!!!!!!!!!'
+    fi
 done
 
 exit 0
