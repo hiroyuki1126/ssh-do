@@ -38,7 +38,7 @@ for ssh_info in "${data[@]}"; do
 
     read -p "#################### ${hostname} #################### ok? (y/N): " yn
     case "${yn}" in
-        [nN])
+        [Nn]|[Nn][Oo])
             continue
             ;;
         *)
@@ -52,21 +52,33 @@ for ssh_info in "${data[@]}"; do
         send \"yes\n\"
         expect \"${username}@${hostname}'s password:\" {
             send \"${password}\n\"
+            expect \"${username}@${hostname}'s password:\" {
+                exit 1
+            }
+            exit
         }
     } \"${username}@${hostname}'s password:\" {
         send \"${password}\n\"
+        expect \"${username}@${hostname}'s password:\" {
+            exit 1
+        }
+        exit
     }
     expect eof
     exit
     "
 
-    if [ $? -eq 0 ]; then
-        echo
-        echo '-------------------- successfully exit. --------------------'
-    else
-        echo
-        echo '!!!!!!!!!!!!!!!!!!!! abnormally exit. !!!!!!!!!!!!!!!!!!!!'
-    fi
+    case $? in
+        0)
+            echo -e "\n-------------------- successfully exit. --------------------" 1>&2
+            ;;
+        1)
+            echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: username or password is incorrect. !!!!!!!!!!!!!!!!!!!!" 1>&2
+            ;;
+        *)
+            echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: abnormally exit. !!!!!!!!!!!!!!!!!!!!" 1>&2
+            ;;
+    esac
 done
 
 exit 0
