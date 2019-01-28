@@ -65,6 +65,8 @@ for ssh_info in "${data[@]}"; do
         }
     } \"Connection refused\" {
         exit 2
+    } \"Operation timed out\" {
+        exit 3
     }
     expect eof
     exit
@@ -79,6 +81,9 @@ for ssh_info in "${data[@]}"; do
             ;;
         2)
             echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: connection refused. !!!!!!!!!!!!!!!!!!!!" 1>&2
+            ;;
+        3)
+            echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: operation timed out. !!!!!!!!!!!!!!!!!!!!" 1>&2
             ;;
         *)
             echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: abnormally exit. !!!!!!!!!!!!!!!!!!!!" 1>&2
