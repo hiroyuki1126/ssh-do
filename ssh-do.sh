@@ -53,7 +53,7 @@ for ssh_info in "${data[@]}"; do
         expect \"${username}@${hostname}'s password:\" {
             exit 1
         }
-        exit
+        exit 0
     } \"Are you sure you want to continue connecting (yes/no)?\" {
         send \"yes\n\"
         expect \"${username}@${hostname}'s password:\" {
@@ -61,15 +61,14 @@ for ssh_info in "${data[@]}"; do
             expect \"${username}@${hostname}'s password:\" {
                 exit 1
             }
-            exit
+            exit 0
         }
     } \"Connection refused\" {
         exit 2
     } \"Operation timed out\" {
         exit 3
     }
-    expect eof
-    exit
+    exit 9
     "
 
     case $? in
