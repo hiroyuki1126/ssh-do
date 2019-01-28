@@ -28,7 +28,7 @@ cat ${script_file} || abort "cat ${script_file}: failed."
 
 for hostinfo in "${data[@]}"; do
     host_array=(${hostinfo})
-    if [ ${#host_array[@]} -ne 3 ]; then
+    if [ ${#host_array[@]} -lt 3 ]; then
         error "${server_list}: format is invalid. => ${hostinfo}"
         continue
     fi
