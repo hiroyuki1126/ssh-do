@@ -48,7 +48,13 @@ for ssh_info in "${data[@]}"; do
     expect -c "
     set timeout -1
     spawn bash -c \"cat ${script_file} | ssh ${username}@${hostname} bash -x\"
-    expect \"Are you sure you want to continue connecting (yes/no)?\" {
+    expect \"${username}@${hostname}'s password:\" {
+        send \"${password}\n\"
+        expect \"${username}@${hostname}'s password:\" {
+            exit 1
+        }
+        exit
+    } \"Are you sure you want to continue connecting (yes/no)?\" {
         send \"yes\n\"
         expect \"${username}@${hostname}'s password:\" {
             send \"${password}\n\"
@@ -57,12 +63,8 @@ for ssh_info in "${data[@]}"; do
             }
             exit
         }
-    } \"${username}@${hostname}'s password:\" {
-        send \"${password}\n\"
-        expect \"${username}@${hostname}'s password:\" {
-            exit 1
-        }
-        exit
+    } \"Connection refused\" {
+        exit 2
     }
     expect eof
     exit
@@ -74,6 +76,9 @@ for ssh_info in "${data[@]}"; do
             ;;
         1)
             echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: username or password is incorrect. !!!!!!!!!!!!!!!!!!!!" 1>&2
+            ;;
+        2)
+            echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: connection refused. !!!!!!!!!!!!!!!!!!!!" 1>&2
             ;;
         *)
             echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: abnormally exit. !!!!!!!!!!!!!!!!!!!!" 1>&2
