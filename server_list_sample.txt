@@ -1,3 +1,4 @@
+# hostname username password
 linux1 admin admin
 linux2 admin admin
 linux3 admin admin
