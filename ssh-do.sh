@@ -26,15 +26,15 @@ FILE_CONTENTS
 
 cat ${script_file} || abort "cat ${script_file}: failed."
 
-for hostinfo in "${data[@]}"; do
-    host_array=(${hostinfo})
-    if [ ${#host_array[@]} -lt 3 ]; then
-        error "${server_list}: format is invalid. => ${hostinfo}"
+for ssh_info in "${data[@]}"; do
+    si_array=(${ssh_info})
+    if [ ${#si_array[@]} -lt 3 ]; then
+        error "${server_list}: format is invalid. => ${ssh_info}"
         continue
     fi
-    hostname=${host_array[0]}
-    username=${host_array[1]}
-    password=${host_array[2]}
+    hostname=${si_array[0]}
+    username=${si_array[1]}
+    password=${si_array[2]}
 
     read -p "#################### ${hostname} #################### ok? (y/N): " yn
     case "${yn}" in
