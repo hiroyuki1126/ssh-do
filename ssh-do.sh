@@ -47,7 +47,7 @@ for ssh_info in "${data[@]}"; do
 
     expect -c "
     set timeout -1
-    spawn bash -c \"cat ${script_file} | ssh ${username}@${hostname} bash\"
+    spawn bash -c \"cat ${script_file} | ssh ${username}@${hostname} bash -x\"
     expect \"Are you sure you want to continue connecting (yes/no)?\" {
         send \"yes\n\"
         expect \"${username}@${hostname}'s password:\" {
