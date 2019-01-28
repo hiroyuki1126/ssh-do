@@ -63,10 +63,12 @@ for ssh_info in "${data[@]}"; do
             }
             exit 0
         }
-    } \"Connection refused\" {
+    } \"Permission denied\" {
         exit 2
-    } \"Operation timed out\" {
+    } \"Connection refused\" {
         exit 3
+    } \"Operation timed out\" {
+        exit 4
     }
     exit 9
     "
@@ -79,9 +81,12 @@ for ssh_info in "${data[@]}"; do
             echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: username or password is incorrect. !!!!!!!!!!!!!!!!!!!!" 1>&2
             ;;
         2)
-            echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: connection refused. !!!!!!!!!!!!!!!!!!!!" 1>&2
+            echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: Permission denied. !!!!!!!!!!!!!!!!!!!!" 1>&2
             ;;
         3)
+            echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: connection refused. !!!!!!!!!!!!!!!!!!!!" 1>&2
+            ;;
+        4)
             echo -e "\n!!!!!!!!!!!!!!!!!!!! ERROR: operation timed out. !!!!!!!!!!!!!!!!!!!!" 1>&2
             ;;
         *)
